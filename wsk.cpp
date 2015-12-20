@@ -29,8 +29,6 @@ long counter = 0;;
 
 long T[100001][5];
 
-long TRIP[1000001][3];
-
 long A[100001][3]; // position after only one move from (0,0)
 
 long max_value = 10;
@@ -75,7 +73,6 @@ void print_tree(struct node *n) {
 // Removes additional leaves; Adds max value in each leaf.
 void change_values_in_tree(struct node *n) {
     if (n != NULL) {
-        //n->key = max_value;
         change_values_in_tree(n->left);
         change_values_in_tree(n->right);
         if ((n->left != NULL) && (n->right == NULL)) {
@@ -86,56 +83,9 @@ void change_values_in_tree(struct node *n) {
 }
 
 
-// Prints tree (only leaves)
-void print_changed_tree(struct node *n) {
-    if (n != NULL) {
-        print_changed_tree(n->left);
-        print_changed_tree(n->right);
-        if ((n->left == NULL) && (n->right == NULL)) {
-            cout << n->key << endl;
-        }
-    }
-}
-
-
-// Returns index to first element smaller than my index(position)
-long find_first_smaller_on_the_left(struct node *n, long order, long position, long leaves, int h) {
-    // order is a number in array which stores data in a proper order
-    flunkey2 = leaves;
-    while (h > 0) {
-        leaves = leaves / 2;
-        if (n->key > order) {
-            return 0;
-        }
-        if ((position <= flunkey2 - leaves + 1) && (h > 0)) {
-            if (n->left->key > order) {
-                return 0;
-            }
-            flunkey2 = flunkey2 - leaves;
-            n = n->left;
-        } else if (position > flunkey2 - leaves + 1) {
-            if (n->right->key < order) {
-                n = n->right;
-            } else {
-                n = n->left;
-                flunkey2 = flunkey2 - leaves;
-            }
-        } else {
-            return n->key;
-        }
-        h--;
-    }
-    if (h == 0) {
-        return flunkey2;
-    }
-    return 0;
-}
-
-
 // Insertion to tree, to count where is he after gets a hint
 void insert_on_position(long value, long position, long leaves, int h, struct node *n) {
     long f2 = leaves;
-    //leaves = leaves / 2;
     while (h > 0) {
         leaves = leaves / 2;
         if (n->key > value) {
@@ -151,6 +101,7 @@ void insert_on_position(long value, long position, long leaves, int h, struct no
     }
     n->key = value;
 }
+
 
 // Wypełniam drzewo wartościami z punktu (0,0)
 void prepare_tree_to_hints(struct node *n) {
@@ -185,7 +136,6 @@ void insert(long value, struct node *n, int H, long to_insert) {
 }
 
 
-// -----------------------------------------------------------------------------
 // Merges states from left and right node
 void merges_two_hints(struct node *n) {
     n->x = n->left->x;
@@ -201,12 +151,12 @@ void merges_two_hints(struct node *n) {
             n->y += n->right->x;
             break;
         case 0:
-            n->x += n->right->y;
-            n->y += n->right->x;
+            n->x += n->right->x;
+            n->y += n->right->y;
             break;
         case 2:
-            n->x -= n->right->y;
-            n->y -= n->right->x;
+            n->x -= n->right->x;
+            n->y -= n->right->y;
             break;
     }
     n->key = (n->left->key + n->right->key) % 4;
@@ -224,17 +174,16 @@ void adds_from_left_nodes(struct node *n) {
             temp_node.y += n->x;
             break;
         case 0:
-            temp_node.x += n->y;
-            temp_node.y += n->x;
+            temp_node.x += n->x;
+            temp_node.y += n->y;
             break;
         case 2:
-            temp_node.x -= n->y;
-            temp_node.y -= n->x;
+            temp_node.x -= n->x;
+            temp_node.y -= n->y;
             break;
     }
     temp_node.key = (temp_node.key + n->key) % 4;
 }
-// -----------------------------------------------------------------------------
 
 
 void inserts_on_position_and_updates_nodes(long value, long position, long leaves, int h, struct node *n, int f1, int f2) {
@@ -242,12 +191,10 @@ void inserts_on_position_and_updates_nodes(long value, long position, long leave
         leaves = leaves / 2;
         if (position <= f2 - leaves) { // ide do lewego synka
             f2 = f2 - leaves;
-            cout << "lewo " << endl;
             --h;
             inserts_on_position_and_updates_nodes(value, position, leaves, h, n->left, f1, f2);
         } else { // ide do prawego synka
             f1 = f1 + leaves;
-            cout << "prawo " << endl;
             adds_from_left_nodes(n->left);
             --h;
             inserts_on_position_and_updates_nodes(value, position, leaves, h, n->right, f1, f2);
@@ -257,9 +204,7 @@ void inserts_on_position_and_updates_nodes(long value, long position, long leave
         n->key = A[value][0];
         n->x = A[value][1];
         n->y = A[value][2];
-        //cout << A[value][1] << " " << A[value][2] << endl;
         adds_from_left_nodes(n);
-        cout << "[" << n->x << ", " << n->y  << "]" << endl;
     }
 }
 
@@ -315,13 +260,6 @@ int main() {
 
     change_values_in_tree(root);
 
-    for (long i = 0; i <= n; i++) {
-        TRIP[i][1] = 0;
-        TRIP[i][2] = 0;
-    }
-    TRIP[0][0] = 1;
-
-// -----------------------------------------------------------------------------
     for (long i = 1; i <= n; i++) {
         if (T[i][1] == 3) { // ide w lewo
             A[i][0] = 3; // to na kierunek
@@ -339,10 +277,6 @@ int main() {
 
     }
 
-// -----------------------------------------------------------------------------
-
-    //long k;
-
     // Ustalenie, która wskazówka jest, która, bo T[j][3] mówi, która jest na
     // pozycji j-tej
     for (long j = 1; j <= n; j++) {
@@ -359,33 +293,5 @@ int main() {
         inserts_on_position_and_updates_nodes(j, T[j][4], l, h, root, flunkey1, flunkey2);
         print_coordinates();
     }
-
-    //cout << -2 % 4;
-
-
-/*
-    for (long j = 1; j <= n; j++) {
-        k = find_first_smaller_on_the_left(root, T[j][4], j, l, h);
-        insert_on_position(T[j][4], j, l, h, root);
-        TRIP[j][0] = (TRIP[k][0] + T[j][1]) % 4;
-        if (TRIP[j][0] == 1) {
-            TRIP[j][2] = TRIP[k][2] + T[j][2];
-            TRIP[j][1] = TRIP[k][1];
-        } else if (TRIP[j][0] == 0) {
-            TRIP[j][1] = TRIP[k][1] + T[j][2];
-            TRIP[j][2] = TRIP[k][2];
-        } else if (TRIP[j][0] == 2) {
-            TRIP[j][1] = TRIP[k][1] - T[j][2];
-            TRIP[j][2] = TRIP[k][2];
-        } else {
-            TRIP[j][2] = TRIP[k][2] - T[j][2];
-            TRIP[j][1] = TRIP[k][1];
-        }
-        cout << TRIP[j][1] << " " << TRIP[j][2] << endl;
-    }*/
-
-    //prepare_tree_to_hints(root);
-
-    //print_changed_tree(root);
 
 }
